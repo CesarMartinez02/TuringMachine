@@ -9,9 +9,11 @@ class TuringMachine:
         self.transitions = {}
 
     def set_transitions(self, transitions):
+        """Configura las reglas de transición de la Máquina de Turing."""
         self.transitions = transitions
 
     def move_head(self, direction):
+        """Mueve la cabeza de la cinta según la dirección dada ('L' o 'R')."""
         if direction == "R":
             self.head += 1
             if self.head >= len(self.tape):
@@ -20,29 +22,33 @@ class TuringMachine:
             self.head -= 1
 
     def read_symbol(self):
+        """Lee el símbolo actual en la cabeza lectora."""
         return self.tape[self.head]
 
     def write_symbol(self, symbol):
+        """Escribe un símbolo en la cinta en la posición actual."""
         self.tape[self.head] = symbol
 
     def run(self):
+        """Ejecuta la Máquina de Turing con las transiciones definidas."""
         while self.state in self.transitions:
             symbol = self.read_symbol()
             if symbol in self.transitions[self.state]:
                 new_symbol, move, new_state = self.transitions[self.state][symbol]
                 self.write_symbol(new_symbol)
                 self.move_head(move)
-
-                if new_state.startswith("q"):
-                    self.state = "q" + str((int(new_state[1:]) * 2) % 5)  
-                else:
-                    self.state = new_state if new_state != "halt" else "q1"
-
+                self.state = new_state
             else:
-                self.state = "q" + str((int(self.state[1:]) + 1) % 4)  
+                break  # No hay transición definida para este estado/símbolo
 
+    def __str__(self):
+        return "".join(self.tape).replace(self.blank, "")
+
+
+# *** OPERACIONES CON TRANSICIONES ***
 
 def add_turing(a, b):
+    """Máquina de Turing para sumar dos números binarios."""
     tape = list(f"{a}+{b}=")
     tm = TuringMachine(tape)
 
@@ -54,20 +60,20 @@ def add_turing(a, b):
 
     tm.set_transitions(transitions)
     tm.run()
-
     return str(tm)
 
 
 def execute_operation(expression):
+    """Procesa la operación ingresada como una Máquina de Turing."""
     match = re.match(r"(\d+)\s*([\+\-\*/%])\s*(\d+)", expression)
     if match:
         a, op, b = match.groups()
         a, b = int(a), int(b)
 
         if op == "+":
-            return str(a + b)
+            return add_turing("1" * a, "1" * b)  # Representa los números con '1's
         elif op == "-":
-            return str(a - b)
+            return str(a - b if a >= b else "Error: Resta negativa")
         elif op == "*":
             return str(a * b)
         elif op == "/":
@@ -88,22 +94,22 @@ def execute_operation(expression):
     return "Operación no válida"
 
 
+# *** FUNCIÓN PRINCIPAL ***
 def main():
     print("Máquina de Turing - Calculadora")
     print("Operaciones soportadas: +, -, *, /, %, pow(x,y), sqrt(x,y)")
-    print("Escribe 'no mas' para salir.")
+    print("Escribe 'cerrar' para salir.")
 
     while True:
         expr = input("Ingresa operación: ").strip()
-        if expr.lower() == "no mas":
-            print("ta bien, chao")
+        if expr.lower() == "cerrar":
+            print("chao...")
             break
 
         resultado = execute_operation(expr)
-
         print(f"Resultado: {resultado}")
 
 
+# Ejecutar el programa
 if __name__ == "__main__":
     main()
-4+3
