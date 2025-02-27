@@ -9,11 +9,9 @@ class TuringMachine:
         self.transitions = {}
 
     def set_transitions(self, transitions):
-        """Configura las reglas de transición de la Máquina de Turing."""
         self.transitions = transitions
 
     def move_head(self, direction):
-        """Mueve la cabeza de la cinta según la dirección dada ('L' o 'R')."""
         if direction == "R":
             self.head += 1
             if self.head >= len(self.tape):
@@ -22,15 +20,12 @@ class TuringMachine:
             self.head -= 1
 
     def read_symbol(self):
-        """Lee el símbolo actual en la cabeza lectora."""
         return self.tape[self.head]
 
     def write_symbol(self, symbol):
-        """Escribe un símbolo en la cinta en la posición actual."""
         self.tape[self.head] = symbol
 
     def run(self):
-        """Ejecuta la Máquina de Turing con las transiciones definidas."""
         while self.state in self.transitions:
             symbol = self.read_symbol()
             if symbol in self.transitions[self.state]:
@@ -39,39 +34,38 @@ class TuringMachine:
                 self.move_head(move)
                 self.state = new_state
             else:
-                break  # No hay transición definida para este estado/símbolo
+                break
 
     def __str__(self):
         return "".join(self.tape).replace(self.blank, "")
 
-
-# *** OPERACIONES CON TRANSICIONES ***
-
 def add_turing(a, b):
-    """Máquina de Turing para sumar dos números binarios."""
+    """Máquina de Turing que suma dos números y devuelve el resultado en decimal."""
     tape = list(f"{a}+{b}=")
     tm = TuringMachine(tape)
 
     transitions = {
         "q0": {"+": ("+", "R", "q1")},
-        "q1": {"0": ("0", "R", "q1"), "1": ("1", "R", "q1"), "=": ("=", "L", "q2")},
-        "q2": {"1": ("0", "L", "q2"), "0": ("1", "L", "q3"), "+": ("+", "R", "halt")},
+        "q1": {"1": ("X", "R", "q2"), "=": ("=", "L", "q4")},
+        "q2": {"1": ("1", "R", "q2"), "=": ("=", "L", "q3")},
+        "q3": {"X": ("1", "L", "q1")},
+        "q4": {"X": ("1", "L", "q4"), "+": ("+", "R", "halt")}
     }
 
     tm.set_transitions(transitions)
     tm.run()
-    return str(tm)
-
+    
+    resultado = tm.tape.count("1")
+    return str(resultado)
 
 def execute_operation(expression):
-    """Procesa la operación ingresada como una Máquina de Turing."""
     match = re.match(r"(\d+)\s*([\+\-\*/%])\s*(\d+)", expression)
     if match:
         a, op, b = match.groups()
         a, b = int(a), int(b)
 
         if op == "+":
-            return add_turing("1" * a, "1" * b)  # Representa los números con '1's
+            return add_turing("1" * a, "1" * b)
         elif op == "-":
             return str(a - b if a >= b else "Error: Resta negativa")
         elif op == "*":
@@ -93,11 +87,9 @@ def execute_operation(expression):
 
     return "Operación no válida"
 
-
-# *** FUNCIÓN PRINCIPAL ***
 def main():
-    print("Máquina de Turing - Calculadora")
-    print("Operaciones soportadas: +, -, *, /, %, pow(x,y), sqrt(x,y)")
+    print("Máquina de Turing")
+    print("Operaciones: +, -, *, /, %, pow(x,y), sqrt(x,y)")
     print("Escribe 'cerrar' para salir.")
 
     while True:
@@ -109,7 +101,5 @@ def main():
         resultado = execute_operation(expr)
         print(f"Resultado: {resultado}")
 
-
-# Ejecutar el programa
 if __name__ == "__main__":
     main()
