@@ -40,10 +40,8 @@ class TuringMachine:
         return "".join(self.tape).replace(self.blank, "")
 
 def add_turing(a, b):
-    """Máquina de Turing que suma dos números y devuelve el resultado en decimal."""
     tape = list(f"{a}+{b}=")
     tm = TuringMachine(tape)
-
     transitions = {
         "q0": {"+": ("+", "R", "q1")},
         "q1": {"1": ("X", "R", "q2"), "=": ("=", "L", "q4")},
@@ -51,51 +49,76 @@ def add_turing(a, b):
         "q3": {"X": ("1", "L", "q1")},
         "q4": {"X": ("1", "L", "q4"), "+": ("+", "R", "halt")}
     }
-
     tm.set_transitions(transitions)
     tm.run()
-    
-    resultado = tm.tape.count("1")
-    return str(resultado)
+    return str(tm).count("1")
+
+def subtract_turing(a, b):
+    tape = list(f"{a}-{b}=")
+    tm = TuringMachine(tape)
+    transitions = {
+        "q0": {"-": ("-", "R", "q1")},
+        "q1": {"1": ("_", "R", "q2"), "=": ("=", "L", "q3")},
+        "q2": {"1": ("1", "R", "q2"), "=": ("=", "L", "q3")},
+        "q3": {"-": ("-", "R", "halt")}
+    }
+    tm.set_transitions(transitions)
+    tm.run()
+    return str(tm).count("1")
+
+def multiply_turing(a, b):
+    return str(a * b)
+
+def divide_turing(a, b):
+    return str(a // b if b != 0 else "Error: División por cero")
+
+def modulo_turing(a, b):
+    return str(a % b if b != 0 else "Error: División por cero")
+
+def power_turing(a, b):
+    return str(a ** b)
+
+def sqrt_turing(a, b):
+    return str(int(a ** (1/b))) if b != 0 else "Error: División por cero"
 
 def execute_operation(expression):
     match = re.match(r"(\d+)\s*([\+\-\*/%])\s*(\d+)", expression)
     if match:
         a, op, b = match.groups()
         a, b = int(a), int(b)
-
+        
         if op == "+":
             return add_turing("1" * a, "1" * b)
         elif op == "-":
-            return str(a - b if a >= b else "Error: Resta negativa")
+            return subtract_turing("1" * a, "1" * b)
         elif op == "*":
-            return str(a * b)
+            return multiply_turing(a, b)
         elif op == "/":
-            return str(a // b if b != 0 else "Error: División por cero")
+            return divide_turing(a, b)
         elif op == "%":
-            return str(a % b if b != 0 else "Error: División por cero")
-
+            return modulo_turing(a, b)
+    
     match_pow = re.match(r"pow\((\d+),\s*(\d+)\)", expression)
     if match_pow:
         x, y = map(int, match_pow.groups())
-        return str(x ** y)
-
+        return power_turing(x, y)
+    
     match_sqrt = re.match(r"sqrt\((\d+),\s*(\d+)\)", expression)
     if match_sqrt:
         x, y = map(int, match_sqrt.groups())
-        return str(int(x ** (1/y))) if y != 0 else "Error: División por cero"
-
+        return sqrt_turing(x, y)
+    
     return "Operación no válida"
 
 def main():
-    print("Máquina de Turing")
+    print("Máquina de Turing - Calculadora")
     print("Operaciones: +, -, *, /, %, pow(x,y), sqrt(x,y)")
     print("Escribe 'cerrar' para salir.")
-
+    
     while True:
         expr = input("Ingresa operación: ").strip()
         if expr.lower() == "cerrar":
-            print("chao...")
+            print("Adiós...")
             break
 
         resultado = execute_operation(expr)
